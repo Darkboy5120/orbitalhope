@@ -1,5 +1,5 @@
 // Sample TLE
-const get_coords = (tleLine1, tleLine2) => {
+const get_coords = (tleLine1, tleLine2, date) => {
     //var tleLine1 = '1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996',
     //tleLine2 = '2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400';    
 
@@ -10,19 +10,12 @@ const get_coords = (tleLine1, tleLine2) => {
     //var positionAndVelocity = satellite.sgp4(satrec, timeSinceTleEpochMinutes);
 
     //  Or you can use a JavaScript Date
-    var positionAndVelocity = satellite.propagate(satrec, new Date());
+    var positionAndVelocity = satellite.propagate(satrec, date);
 
     // The position_velocity result is a key-value pair of ECI coordinates.
     // These are the base results from which all other coordinates are derived.
     var positionEci = positionAndVelocity.position,
         velocityEci = positionAndVelocity.velocity;
-
-    // Set the Observer at 122.03 West by 36.96 North, in RADIANS
-    var observerGd = {
-        longitude: satellite.degreesToRadians(-122.0308),
-        latitude: satellite.degreesToRadians(36.9613422),
-        height: 0.370
-    };
 
     // You will need GMST for some of the coordinate transforms.
     // http://en.wikipedia.org/wiki/Sidereal_time#Definition
@@ -30,20 +23,13 @@ const get_coords = (tleLine1, tleLine2) => {
 
     // You can get ECF, Geodetic, Look Angles, and Doppler Factor.
     var positionEcf   = satellite.eciToEcf(positionEci, gmst),
-        observerEcf   = satellite.geodeticToEcf(observerGd),
-        positionGd    = satellite.eciToGeodetic(positionEci, gmst),
-        lookAngles    = satellite.ecfToLookAngles(observerGd, positionEcf);
+        positionGd    = satellite.eciToGeodetic(positionEci, gmst);
 
     // The coordinates are all stored in key-value pairs.
     // ECI and ECF are accessed by `x`, `y`, `z` properties.
     var satelliteX = positionEci.x,
         satelliteY = positionEci.y,
         satelliteZ = positionEci.z;
-
-    // Look Angles may be accessed by `azimuth`, `elevation`, `range_sat` properties.
-    var azimuth   = lookAngles.azimuth,
-        elevation = lookAngles.elevation,
-        rangeSat  = lookAngles.rangeSat;
 
     // Geodetic coords are accessed via `longitude`, `latitude`, `height`.
     var longitude = positionGd.longitude,
@@ -56,11 +42,26 @@ const get_coords = (tleLine1, tleLine2) => {
 
     return {
         "longitude" : longitudeDeg,
-        "latitude" : latitudeDeg
+        "latitude" : latitudeDeg,
+        "height" : height*1000
     };
 }
 
+const get_polygon = (coords) => {
+    const trash_size = 1;
 
+    var boundaries = [];
+    //latitude, longitude, altitude
+    boundaries.push(new WorldWind.Position(coords.latitude, coords.longitude, coords.height));
+    boundaries.push(new WorldWind.Position(coords.latitude+trash_size, coords.longitude, coords.height));
+    boundaries.push(new WorldWind.Position(coords.latitude+trash_size, coords.longitude+trash_size, coords.height));
+    boundaries.push(new WorldWind.Position(coords.latitude, coords.longitude+trash_size, coords.height));
+
+    var polygon = new WorldWind.Polygon(boundaries, polygonAttributes);
+    polygon.extrude = false;
+
+    return polygon;
+}
 
 var wwd = new WorldWind.WorldWindow("canvasOne");
 
@@ -84,28 +85,37 @@ polygonAttributes.drawOutline = true;
 polygonAttributes.applyLighting = true;
 
 //use foo funct to use foo data example
-let foo = get_coords(
-    "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
-    "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400"
-);
-console.log(foo);
 
-const trash_size = 2;
+let current_date = new Date();
+const one_minute = 1000 * 60;
+const one_hour = 1000 * 60 * 60;
+const one_day = 1000 * 60 * 60 * 24;
 
-var boundaries = [];
-//latitude, longitude, altitude
-boundaries.push(new WorldWind.Position(foo.latitude, foo.longitude, 1000000));
-boundaries.push(new WorldWind.Position(foo.latitude+trash_size, foo.longitude, 1000000));
-boundaries.push(new WorldWind.Position(foo.latitude+trash_size, foo.longitude+trash_size, 1000000));
-boundaries.push(new WorldWind.Position(foo.latitude, foo.longitude+trash_size, 1000000));
+for (let i = 0; i < 100; i++) {
 
-var polygon = new WorldWind.Polygon(boundaries, polygonAttributes);
-polygon.extrude = false;
+    let trash_coords = get_coords(
+        "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
+        "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
+        new Date(current_date.getMilliseconds()+(one_minute*i))
+    );
+
+    polygonLayer.addRenderable(get_polygon(trash_coords));
+}
 
 
-console.log(polygon);
 
-polygonLayer.addRenderable(polygon);
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Set the picking event handling.
