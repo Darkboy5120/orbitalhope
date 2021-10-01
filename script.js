@@ -133,8 +133,9 @@ for (let i = 0; i < 100; i++) {
 
 
 
-// Set the picking event handling.
 
+// Set the picking event handling.
+/*
 var highlightedItems = [];
 
 var handlePick = function (o) {
@@ -184,3 +185,4 @@ wwd.addEventListener("mousemove", handlePick);
 
 // Listen for taps on mobile devices and highlight the placemarks that the user taps.
 var tapRecognizer = new WorldWind.TapRecognizer(wwd, handlePick);
+*/
