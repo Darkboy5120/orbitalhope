@@ -48,6 +48,9 @@ const get_coords = (tleLine1, tleLine2, date) => {
 }
 
 const get_polygon = (coords) => {
+    //esta funcion es para crear una objeto con dimenciones predefinidas pero con
+    //coordenadas como paremetro
+
     const trash_size = 1;
 
     var boundaries = [];
@@ -63,29 +66,38 @@ const get_polygon = (coords) => {
     return polygon;
 }
 
+//creamos el canvas
 var wwd = new WorldWind.WorldWindow("canvasOne");
 
-//low resolution imagery layer
+//agregar capa inicial de resolucion baja
 wwd.addLayer(new WorldWind.BMNGOneImageLayer());
-//hight resolution imagery layer
+//capa de resolucion alta
 wwd.addLayer(new WorldWind.BMNGLandsatLayer());
 
+//agregamos la brujula
 wwd.addLayer(new WorldWind.CompassLayer());
+//agregamos la capa para las coordenadas
 wwd.addLayer(new WorldWind.CoordinatesDisplayLayer(wwd));
+//agregamos la capa para los controles (botones) del mundo
 wwd.addLayer(new WorldWind.ViewControlsLayer(wwd));
 
-//create new layer for 3d for 3d polygons and add it to worldwindow
+//creamos una nueva capa
 var polygonLayer = new WorldWind.RenderableLayer();
+//la agregamos a worldwind
 wwd.addLayer(polygonLayer);
 
+//creamos una forma con los atributos por defecto
 var polygonAttributes = new WorldWind.ShapeAttributes(null);
+//le agregamos el colore del interior en formato rgba
 polygonAttributes.interiorColor = new WorldWind.Color(1, 0, 0, 0.75);
+//definimos el color del border del objeto
 polygonAttributes.outlineColor = WorldWind.Color.BLUE;
+//permitimos que se visualice el borde del objeto (desactivado por defecto)
 polygonAttributes.drawOutline = true;
+//aplicamos matices de la luz en el objeto (desactivado por defecto)
 polygonAttributes.applyLighting = true;
 
-//use foo funct to use foo data example
-
+//guardamos la fecha de este momento y definimos algunas constantes de tiempo en milisegundos
 let current_date = new Date();
 const one_minute = 1000 * 60;
 const one_hour = 1000 * 60 * 60;
@@ -93,12 +105,15 @@ const one_day = 1000 * 60 * 60 * 24;
 
 for (let i = 0; i < 100; i++) {
 
+    //obtenemos la latitud, longitud y altitud de la basura de ejemplo
     let trash_coords = get_coords(
         "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
         "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
+        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
         new Date(current_date.getMilliseconds()+(one_minute*i))
     );
 
+    //agregamos la info de la basura a la capa
     polygonLayer.addRenderable(get_polygon(trash_coords));
 }
 
