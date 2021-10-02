@@ -103,21 +103,51 @@ const one_minute = 1000 * 60;
 const one_hour = 1000 * 60 * 60;
 const one_day = 1000 * 60 * 60 * 24;
 
-for (let i = 0; i < 100; i++) {
 
-    //obtenemos la latitud, longitud y altitud de la basura de ejemplo
-    let trash_coords = get_coords(
+
+let cordenadas =[
+    get_coords(
         "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
         "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
         //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-        new Date(current_date.getMilliseconds()+(one_minute*i))
-    );
-
-    //agregamos la info de la basura a la capa
-    polygonLayer.addRenderable(get_polygon(trash_coords));
+        new Date(current_date.getMilliseconds()+(one_minute*1))
+    ),
+    get_coords(
+        "1 49122U 21079A   21274.46439531  .00000051  00000-0  21392-4 0  9995",
+        "2 49122  98.2820 345.6698 0001582 159.7763 200.3500 14.57684755  3548",
+        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+        new Date(current_date.getMilliseconds()+(one_minute*2))
+    ),
+    get_coords(
+        "1 49123U 21079B   21274.22918002  .00000497  00000-0  45952-4 0  9997",
+        "2 49123  98.3179 346.9523 0137518 343.6837  15.9975 14.93117043  3595",
+        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+        new Date(current_date.getMilliseconds()+(one_minute*3))
+    ),
+    get_coords(
+        "1 49124U 21079C   21271.63520353  .00002623  00000-0  14257-3 0  9994",
+        "2 49124  98.4033 343.4576 0221837 235.7838 122.2185 14.96969712  3132",
+        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+        new Date(current_date.getMilliseconds()+(one_minute*4))
+    )
+];
+const renderObjecbs=(data,show)=>{
+    if(show==true){
+        for (let i = 0; i <cordenadas.length; i++) {
+            //agregamos la info de la basura a la capa
+            polygonLayer.addRenderable(get_polygon(cordenadas[i]));
+        }
+        polygonLayer.opacity=1;
+    }else{
+        polygonLayer.opacity=0;
+        for (let i = 0; i <cordenadas.length; i++) {
+            //agregamos la info de la basura a la capa
+            
+            //polygonLayer.removeAllRenderables();
+        }
+    }
 }
-
-
+renderObjecbs(cordenadas,true);
 
 
 
