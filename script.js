@@ -114,7 +114,7 @@ let cordenadas =[
     ),
     get_coords(
         "1 49122U 21079A   21274.46439531  .00000051  00000-0  21392-4 0  9995",
-        "2 49122  98.2820 345.6698 0001582 159.7763 200.3500 14.57684755  3548",
+        "2 49123  98.3179 347.5191 0137485 341.9235  17.7120 14.93117451  3673",
         //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
         new Date(current_date.getMilliseconds()+(one_minute*2))
     ),
@@ -125,22 +125,22 @@ let cordenadas =[
         new Date(current_date.getMilliseconds()+(one_minute*3))
     ),
     get_coords(
-        "1 49124U 21079C   21271.63520353  .00002623  00000-0  14257-3 0  9994",
-        "2 49124  98.4033 343.4576 0221837 235.7838 122.2185 14.96969712  3132",
+        "1 49126U 21080B   21271.05107489  .00032205 -27827-7  20949-2 0  9992",
+        "2 49126  24.6386 156.0913 7211978 191.6724 132.0487  2.39915434   277",
         //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
         new Date(current_date.getMilliseconds()+(one_minute*4))
     )
 ];
 const renderObjecbs=(data,capa,show)=>{
     if(show==true){
-        for (let i = 0; i <cordenadas.length; i++) {
+        for (let i = 0; i <data.length; i++) {
             //agregamos la info de la basura a la capa
-            capa.addRenderable(get_polygon(cordenadas[i]));
+            capa.addRenderable(get_polygon(data[i]));
         }
         capa.opacity=1;
     }else{
         capa.opacity=0;
-        for (let i = 0; i <cordenadas.length; i++) {
+        for (let i = 0; i <data.length; i++) {
             //agregamos la info de la basura a la capa
             
             //polygonLayer.removeAllRenderables();
