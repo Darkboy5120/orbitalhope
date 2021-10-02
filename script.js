@@ -131,15 +131,15 @@ let cordenadas =[
         new Date(current_date.getMilliseconds()+(one_minute*4))
     )
 ];
-const renderObjecbs=(data,show)=>{
+const renderObjecbs=(data,capa,show)=>{
     if(show==true){
         for (let i = 0; i <cordenadas.length; i++) {
             //agregamos la info de la basura a la capa
-            polygonLayer.addRenderable(get_polygon(cordenadas[i]));
+            capa.addRenderable(get_polygon(cordenadas[i]));
         }
-        polygonLayer.opacity=1;
+        capa.opacity=1;
     }else{
-        polygonLayer.opacity=0;
+        capa.opacity=0;
         for (let i = 0; i <cordenadas.length; i++) {
             //agregamos la info de la basura a la capa
             
@@ -147,7 +147,8 @@ const renderObjecbs=(data,show)=>{
         }
     }
 }
-renderObjecbs(cordenadas,true);
+renderObjecbs(cordenadas,polygonLayer,true);
+
 
 
 
