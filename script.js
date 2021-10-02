@@ -1,70 +1,90 @@
 // Sample TLE
 const get_coords = (tleLine1, tleLine2, date) => {
-    //var tleLine1 = '1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996',
-    //tleLine2 = '2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400';    
+  //var tleLine1 = '1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996',
+  //tleLine2 = '2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400';
 
-    // Initialize a satellite record
-    var satrec = satellite.twoline2satrec(tleLine1, tleLine2);
+  // Initialize a satellite record
+  var satrec = satellite.twoline2satrec(tleLine1, tleLine2);
 
-    //  Propagate satellite using time since epoch (in minutes).
-    //var positionAndVelocity = satellite.sgp4(satrec, timeSinceTleEpochMinutes);
+  //  Propagate satellite using time since epoch (in minutes).
+  //var positionAndVelocity = satellite.sgp4(satrec, timeSinceTleEpochMinutes);
 
-    //  Or you can use a JavaScript Date
-    var positionAndVelocity = satellite.propagate(satrec, date);
+  //  Or you can use a JavaScript Date
+  var positionAndVelocity = satellite.propagate(satrec, date);
 
-    // The position_velocity result is a key-value pair of ECI coordinates.
-    // These are the base results from which all other coordinates are derived.
-    var positionEci = positionAndVelocity.position,
-        velocityEci = positionAndVelocity.velocity;
+  // The position_velocity result is a key-value pair of ECI coordinates.
+  // These are the base results from which all other coordinates are derived.
+  var positionEci = positionAndVelocity.position,
+    velocityEci = positionAndVelocity.velocity;
 
-    // You will need GMST for some of the coordinate transforms.
-    // http://en.wikipedia.org/wiki/Sidereal_time#Definition
-    var gmst = satellite.gstime(new Date());
+  // You will need GMST for some of the coordinate transforms.
+  // http://en.wikipedia.org/wiki/Sidereal_time#Definition
+  var gmst = satellite.gstime(new Date());
 
-    // You can get ECF, Geodetic, Look Angles, and Doppler Factor.
-    var positionEcf   = satellite.eciToEcf(positionEci, gmst),
-        positionGd    = satellite.eciToGeodetic(positionEci, gmst);
+  // You can get ECF, Geodetic, Look Angles, and Doppler Factor.
+  var positionEcf = satellite.eciToEcf(positionEci, gmst),
+    positionGd = satellite.eciToGeodetic(positionEci, gmst);
 
-    // The coordinates are all stored in key-value pairs.
-    // ECI and ECF are accessed by `x`, `y`, `z` properties.
-    var satelliteX = positionEci.x,
-        satelliteY = positionEci.y,
-        satelliteZ = positionEci.z;
+  // The coordinates are all stored in key-value pairs.
+  // ECI and ECF are accessed by `x`, `y`, `z` properties.
+  var satelliteX = positionEci.x,
+    satelliteY = positionEci.y,
+    satelliteZ = positionEci.z;
 
-    // Geodetic coords are accessed via `longitude`, `latitude`, `height`.
-    var longitude = positionGd.longitude,
-        latitude  = positionGd.latitude,
-        height    = positionGd.height;
+  // Geodetic coords are accessed via `longitude`, `latitude`, `height`.
+  var longitude = positionGd.longitude,
+    latitude = positionGd.latitude,
+    height = positionGd.height;
 
-    //  Convert the RADIANS to DEGREES.
-    var longitudeDeg = satellite.degreesLong(longitude),
-        latitudeDeg  = satellite.degreesLat(latitude);
+  //  Convert the RADIANS to DEGREES.
+  var longitudeDeg = satellite.degreesLong(longitude),
+    latitudeDeg = satellite.degreesLat(latitude);
 
-    return {
-        "longitude" : longitudeDeg,
-        "latitude" : latitudeDeg,
-        "height" : height*1000
-    };
-}
+  return {
+    longitude: longitudeDeg,
+    latitude: latitudeDeg,
+    height: height * 1000,
+  };
+};
 
 const get_polygon = (coords) => {
-    //esta funcion es para crear una objeto con dimenciones predefinidas pero con
-    //coordenadas como paremetro
+  //esta funcion es para crear una objeto con dimenciones predefinidas pero con
+  //coordenadas como paremetro
 
-    const trash_size = 1;
+  const trash_size = 1;
 
-    var boundaries = [];
-    //latitude, longitude, altitude
-    boundaries.push(new WorldWind.Position(coords.latitude, coords.longitude, coords.height));
-    boundaries.push(new WorldWind.Position(coords.latitude+trash_size, coords.longitude, coords.height));
-    boundaries.push(new WorldWind.Position(coords.latitude+trash_size, coords.longitude+trash_size, coords.height));
-    boundaries.push(new WorldWind.Position(coords.latitude, coords.longitude+trash_size, coords.height));
+  var boundaries = [];
+  //latitude, longitude, altitude
+  boundaries.push(
+    new WorldWind.Position(coords.latitude, coords.longitude, coords.height)
+  );
+  boundaries.push(
+    new WorldWind.Position(
+      coords.latitude + trash_size,
+      coords.longitude,
+      coords.height
+    )
+  );
+  boundaries.push(
+    new WorldWind.Position(
+      coords.latitude + trash_size,
+      coords.longitude + trash_size,
+      coords.height
+    )
+  );
+  boundaries.push(
+    new WorldWind.Position(
+      coords.latitude,
+      coords.longitude + trash_size,
+      coords.height
+    )
+  );
 
-    var polygon = new WorldWind.Polygon(boundaries, polygonAttributes);
-    polygon.extrude = false;
+  var polygon = new WorldWind.Polygon(boundaries, polygonAttributes);
+  polygon.extrude = false;
 
-    return polygon;
-}
+  return polygon;
+};
 
 //creamos el canvas
 var wwd = new WorldWind.WorldWindow("canvasOne");
@@ -103,67 +123,91 @@ const one_minute = 1000 * 60;
 const one_hour = 1000 * 60 * 60;
 const one_day = 1000 * 60 * 60 * 24;
 
-
-
-let cordenadas =[
-    get_coords(
-        "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
-        "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
-        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-        new Date(current_date.getMilliseconds()+(one_minute*1))
-    ),
-    get_coords(
-        "1 49122U 21079A   21274.46439531  .00000051  00000-0  21392-4 0  9995",
-        "2 49122  98.2820 345.6698 0001582 159.7763 200.3500 14.57684755  3548",
-        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-        new Date(current_date.getMilliseconds()+(one_minute*2))
-    ),
-    get_coords(
-        "1 49123U 21079B   21274.22918002  .00000497  00000-0  45952-4 0  9997",
-        "2 49123  98.3179 346.9523 0137518 343.6837  15.9975 14.93117043  3595",
-        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-        new Date(current_date.getMilliseconds()+(one_minute*3))
-    ),
-    get_coords(
-        "1 49124U 21079C   21271.63520353  .00002623  00000-0  14257-3 0  9994",
-        "2 49124  98.4033 343.4576 0221837 235.7838 122.2185 14.96969712  3132",
-        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-        new Date(current_date.getMilliseconds()+(one_minute*4))
-    )
+let cordenadas = [
+  get_coords(
+    "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
+    "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
+    //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+    new Date(current_date.getMilliseconds() + one_minute * 1)
+  ),
+  get_coords(
+    "1 49122U 21079A   21274.46439531  .00000051  00000-0  21392-4 0  9995",
+    "2 49122  98.2820 345.6698 0001582 159.7763 200.3500 14.57684755  3548",
+    //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+    new Date(current_date.getMilliseconds() + one_minute * 2)
+  ),
+  get_coords(
+    "1 49123U 21079B   21274.22918002  .00000497  00000-0  45952-4 0  9997",
+    "2 49123  98.3179 346.9523 0137518 343.6837  15.9975 14.93117043  3595",
+    //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+    new Date(current_date.getMilliseconds() + one_minute * 3)
+  ),
+  get_coords(
+    "1 49124U 21079C   21271.63520353  .00002623  00000-0  14257-3 0  9994",
+    "2 49124  98.4033 343.4576 0221837 235.7838 122.2185 14.96969712  3132",
+    //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+    new Date(current_date.getMilliseconds() + one_minute * 4)
+  ),
 ];
-const renderObjecbs=(data,capa,show)=>{
-    if(show==true){
-        for (let i = 0; i <cordenadas.length; i++) {
-            //agregamos la info de la basura a la capa
-            capa.addRenderable(get_polygon(cordenadas[i]));
-        }
-        capa.opacity=1;
-    }else{
-        capa.opacity=0;
-        for (let i = 0; i <cordenadas.length; i++) {
-            //agregamos la info de la basura a la capa
-            
-            //polygonLayer.removeAllRenderables();
-        }
+const renderObjecbs = (data, capa, show) => {
+  if (show == true) {
+    for (let i = 0; i < cordenadas.length; i++) {
+      //agregamos la info de la basura a la capa
+      capa.addRenderable(get_polygon(cordenadas[i]));
     }
-}
-renderObjecbs(cordenadas,polygonLayer,true);
+    capa.opacity = 1;
+  } else {
+    capa.opacity = 0;
+    for (let i = 0; i < cordenadas.length; i++) {
+      //agregamos la info de la basura a la capa
 
+      polygonLayer.removeAllRenderables();
+    }
+  }
+};
 
+renderObjecbs(cordenadas, polygonLayer, true);
 
+const getDatasetsInfo = async (link) => {
+  /*   var result = null;
+  var xmlhttp = new XMLHttpRequest();
+  xmlhttp.open("GET", link, true);
+  xmlhttp.send(null);
+  var txt = xmlhttp.responseText;
+  console.log(txt)
+  if (xmlhttp.status == 200) {
+    result = xmlhttp.responseText;
+  }
+  console.log(result);
+  return result;
+ */
 
+  /* try {
+    const file = await fetch(
+      "https://celestrak.com/NORAD/elements/tle-new.txt",
+      {
+        method: "GET",
+        headers: new Headers({ "Content-type": "text/plain" }),
+        mode: "no-cors", // <---
+        cache: "default",
+      }
+    );
+    console.log(file.text());
+  } catch (error) {
+    console.log(error);
+  } */
 
-
-
-
-
-
-
-
-
-
-
-
+  await fetch("https://celestrak.com/NORAD/elements/tle-new.txt", {
+    method: "GET",
+    headers: new Headers({ "Content-type": "text/plain" }),
+    mode: "no-cors",
+    cache: "default",
+  }).then((res) => console.log(res.text()));
+};
+const info = getDatasetsInfo(
+  "https://celestrak.com/NORAD/elements/tle-new.txt"
+);
+console.log(info);
 
 // Set the picking event handling.
 /*
