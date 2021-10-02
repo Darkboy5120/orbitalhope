@@ -107,40 +107,59 @@ const one_day = 1000 * 60 * 60 * 24;
 
 let cordenadas =[
     get_coords(
-        "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
-        "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
+        "1 49122U 21079A   21275.15082059  .00000029  00000-0  16545-4 0  9990",
+        "2 49122  98.2818 346.3530 0001686 158.9355 201.1922 14.57684642  3644",
         //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
         new Date(current_date.getMilliseconds()+(one_minute*1))
     ),
     get_coords(
-        "1 49122U 21079A   21274.46439531  .00000051  00000-0  21392-4 0  9995",
+        "1 49123U 21079B   21274.76528985  .00000423  00000-0  40047-4 0  9992",
         "2 49123  98.3179 347.5191 0137485 341.9235  17.7120 14.93117451  3673",
         //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
         new Date(current_date.getMilliseconds()+(one_minute*2))
     ),
     get_coords(
-        "1 49123U 21079B   21274.22918002  .00000497  00000-0  45952-4 0  9997",
-        "2 49123  98.3179 346.9523 0137518 343.6837  15.9975 14.93117043  3595",
+        "1 49124U 21079C   21272.70469719  .00002623  00000-0  14257-3 0  9991",
+        "2 49124  98.4033 344.6074 0221823 232.2673 125.8261 14.96975531  3299",
         //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
         new Date(current_date.getMilliseconds()+(one_minute*3))
     ),
     get_coords(
-        "1 49126U 21080B   21271.05107489  .00032205 -27827-7  20949-2 0  9992",
-        "2 49126  24.6386 156.0913 7211978 191.6724 132.0487  2.39915434   277",
+        "1 49125U 21080A   21274.43868698 -.00000315  00000-0  00000-0 0  9990",
+        "2 49125   0.0499 263.0902 0004018 274.6315  92.0202  1.00271811   396",
         //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
         new Date(current_date.getMilliseconds()+(one_minute*4))
-    )
+    ),
+    get_coords(
+        "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
+        "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
+        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+        new Date(current_date.getMilliseconds()+(one_minute*5))
+    ),
+    get_coords(
+        "1 49122U 21079A   21274.46439531  .00000051  00000-0  21392-4 0  9995",
+        "2 49123  98.3179 347.5191 0137485 341.9235  17.7120 14.93117451  3673",
+        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+        new Date(current_date.getMilliseconds()+(one_minute*6))
+    ),
+    get_coords(
+        "1 49123U 21079B   21274.22918002  .00000497  00000-0  45952-4 0  9997",
+        "2 49123  98.3179 346.9523 0137518 343.6837  15.9975 14.93117043  3595",
+        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+        new Date(current_date.getMilliseconds()+(one_minute*7))
+    ),
 ];
 const renderObjecbs=(data,capa,show)=>{
     if(show==true){
-        for (let i = 0; i <data.length; i++) {
+        for (let i = 0; i <cordenadas.length; i++) {
             //agregamos la info de la basura a la capa
-            capa.addRenderable(get_polygon(data[i]));
+            capa.addRenderable(get_polygon(cordenadas[i]));
+            console.log((cordenadas[i]));
         }
         capa.opacity=1;
     }else{
         capa.opacity=0;
-        for (let i = 0; i <data.length; i++) {
+        for (let i = 0; i <cordenadas.length; i++) {
             //agregamos la info de la basura a la capa
             
             //polygonLayer.removeAllRenderables();
@@ -149,6 +168,7 @@ const renderObjecbs=(data,capa,show)=>{
 }
 renderObjecbs(cordenadas,polygonLayer,true);
 
+ 
 
 
 
@@ -166,54 +186,45 @@ renderObjecbs(cordenadas,polygonLayer,true);
 
 
 // Set the picking event handling.
-/*
-var highlightedItems = [];
 
+var highlightedItems = [];
 var handlePick = function (o) {
     // The input argument is either an Event or a TapRecognizer. Both have the same properties for determining
     // the mouse or tap location.
     var x = o.clientX,
         y = o.clientY;
-
     var redrawRequired = highlightedItems.length > 0;
-
     // De-highlight any highlighted placemarks.
     for (var h = 0; h < highlightedItems.length; h++) {
         highlightedItems[h].highlighted = false;
     }
     highlightedItems = [];
-
     // Perform the pick. Must first convert from window coordinates to canvas coordinates, which are
     // relative to the upper left corner of the canvas rather than the upper left corner of the page.
     var rectRadius = 50,
         pickPoint = wwd.canvasCoordinates(x, y),
         pickRectangle = new WorldWind.Rectangle(pickPoint[0] - rectRadius, pickPoint[1] + rectRadius,
             2 * rectRadius, 2 * rectRadius);
-
     var pickList = wwd.pickShapesInRegion(pickRectangle);
     if (pickList.objects.length > 0) {
         redrawRequired = true;
     }
-
     // Highlight the items picked.
     if (pickList.objects.length > 0) {
         for (var p = 0; p < pickList.objects.length; p++) {
             if (pickList.objects[p].isOnTop) {
                 pickList.objects[p].userObject.highlighted = true;
                 highlightedItems.push(pickList.objects[p].userObject);
+                console.log(highlightedItems);
             }
         }
     }
-
     // Update the window if we changed anything.
     if (redrawRequired) {
         wwd.redraw();
     }
 };
-
 // Listen for mouse moves and highlight the placemarks that the cursor rolls over.
-wwd.addEventListener("mousemove", handlePick);
-
+wwd.addEventListener("click", handlePick);
 // Listen for taps on mobile devices and highlight the placemarks that the user taps.
 var tapRecognizer = new WorldWind.TapRecognizer(wwd, handlePick);
-*/
