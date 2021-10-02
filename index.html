@@ -3,10 +3,70 @@
     <head>
         <meta charset="utf-8">
     </head>
+
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/0d40d8f017.js" crossorigin="anonymous"></script>
+
     <body>
         <canvas id="canvasOne" width="1024" height="768">
             Your browser does not support HTML5 Canvas.
         </canvas>
+
+        <div class="ui">
+
+            <div class="trash-groups">
+                <div class="search-input">
+                    <i class="fas fa-search"></i>
+                    <input type="search" placeholder="Type your debris's name">
+                </div>
+                <div class="tg-items-container">
+                    <p>COSMOS 123123</p>
+                    <p>COSMOS 123123</p>
+                    <p>COSMOS 123123</p>
+                    <p>COSMOS 123123</p>
+                    <p>COSMOS 123123</p>
+                </div>
+            </div>
+
+            <div class="trash-info">
+                <div class="nice-table" id="orbital-params">
+                    <p>Orbital Parameters</p>
+                    <div class="nt-container">
+                        <span>NORAD Catalog Number</span>
+                        <span>33757</span>
+                        <span>International designator</span>
+                        <span>1993-33757</span>
+                        <span>Name</span>
+                        <span>COSMOS 2251 DEB</span>
+                        <span>Period(minutes)</span>
+                        <span>100.55</span>
+                        <span>Inclination(degrees)</span>
+                        <span>74.04</span>
+                        <span>Apogee Height(km)</span>
+                        <span>796</span>
+                        <span>Perigee Height(km)</span>
+                        <span>773</span>
+                        <span>Eccentricity</span>
+                        <span>0.0016155</span>
+                    </div>
+                </div>
+
+                <div class="nice-table" id="geographic-location">
+                    <p>Geographic location</p>
+                    <div class="nt-container">
+                        <span>Longitude</span>
+                        <span>233</span>
+                        <span>Latitude</span>
+                        <span>12</span>
+                        <span>Altitude</span>
+                        <span>213</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
 
         <!-- satelliteJS  -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/4.1.2/satellite.min.js"></script>

@@ -117,17 +117,9 @@ for (let i = 0; i < 100; i++) {
     polygonLayer.addRenderable(get_polygon(trash_coords));
 }
 
-
-
-
-
-
-
-
-
-
-
-
+//polygonLayer.enabled = false;
+//polygonLayer.opacity = 0;
+console.log(polygonLayer);
 
 
 
@@ -135,7 +127,7 @@ for (let i = 0; i < 100; i++) {
 
 
 // Set the picking event handling.
-/*
+
 var highlightedItems = [];
 
 var handlePick = function (o) {
@@ -143,6 +135,8 @@ var handlePick = function (o) {
     // the mouse or tap location.
     var x = o.clientX,
         y = o.clientY;
+
+    console.log(x, y);
 
     var redrawRequired = highlightedItems.length > 0;
 
@@ -164,11 +158,17 @@ var handlePick = function (o) {
         redrawRequired = true;
     }
 
+    //CHEQUEN QUE PICK LIST TIENE EL RESULTADO DEL CLICK
+    //SI SE DETECTA ALGO EL LENGTH DE PICK SE AUMENTA
+
+    console.log(pickList);
+
     // Highlight the items picked.
     if (pickList.objects.length > 0) {
         for (var p = 0; p < pickList.objects.length; p++) {
             if (pickList.objects[p].isOnTop) {
                 pickList.objects[p].userObject.highlighted = true;
+                console.log(pickList.objects[p].userObject);
                 highlightedItems.push(pickList.objects[p].userObject);
             }
         }
@@ -185,4 +185,16 @@ wwd.addEventListener("mousemove", handlePick);
 
 // Listen for taps on mobile devices and highlight the placemarks that the user taps.
 var tapRecognizer = new WorldWind.TapRecognizer(wwd, handlePick);
-*/
+
+
+
+
+
+
+const url = "https://celestrak.com/NORAD/elements/cosmos-2251-debris.txt";
+fetch(url, {
+    mode : "no-cors"
+})
+  .then(response => response.text())
+  .catch(e => console.error(e))
+  .then(data => console.log(data));
