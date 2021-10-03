@@ -222,7 +222,7 @@ const input_search_behaviur = () => {
         let value = event.target.value;
         group_items_container.querySelectorAll("p").forEach(each => {
             let content = each.textContent;
-            if (content.search(value) == 0) {
+            if (content.toUpperCase().search(value) == 0 || content.toLowerCase().search(value) == 0) {
                 each.classList.remove("hidden");
             } else {
                 each.classList.add("hidden");
