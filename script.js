@@ -81,10 +81,8 @@ const set_layer_display = (layer, is_visible) => {
     //funcion para ocular capas
 
     layer.opacity = (is_visible) ? 1 : 0;
-
-    //es esta, solo modifica si te fijas, en el documento de docs, todos tienen su id
-    //el m6 lo esta haciendo Omar, aun no termina
 }
+
 
 
 //creamos el canvas
@@ -103,9 +101,9 @@ wwd.addLayer(new WorldWind.CoordinatesDisplayLayer(wwd));
 wwd.addLayer(new WorldWind.ViewControlsLayer(wwd));
 
 //creamos una nueva capa
-//var polygonLayer = new WorldWind.RenderableLayer();
+var polygonLayer = new WorldWind.RenderableLayer();
 //la agregamos a worldwind
-//wwd.addLayer(polygonLayer);
+wwd.addLayer(polygonLayer);
 
 //guardamos la fecha de este momento y definimos algunas constantes de tiempo en milisegundos
 let current_date = new Date();
@@ -113,124 +111,40 @@ const ONE_MINUTE = 1000 * 60;
 const ONE_HOUR = 1000 * 60 * 60;
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
+var text,
+textAttributes = new WorldWind.TextAttributes(null),
+textLayer = new WorldWind.RenderableLayer("textLayer");
 
+// Set up the common text attributes.
+textAttributes.color = WorldWind.Color.RED;
+// Set the depth test property such that the terrain does not obscure the text.
+textAttributes.depthTest = false;
 
-/*
 //prueba de prediccion COMENTAR ESTO
 for (let i = 0; i < 100; i++) {
-
-    //obtenemos la latitud, longitud y altitud de la basura de ejemplo
     let trash_coords = get_coords(
         "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
         "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
         //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
         new Date(current_date.getMilliseconds()+(ONE_MINUTE*i))
     );
+    peakPosition = new WorldWind.Position(get_polygon(trash_coords).referencePosition.altitude,get_polygon(trash_coords).referencePosition.latitude,0);
+    console.log('textPosition',get_polygon(trash_coords));
+    text = new WorldWind.GeographicText(peakPosition, "Basura");
+
+    // Set the text attributes for this shape.
+    text.attributes = textAttributes;
+
+    // Add the text to the layer.
+    textLayer.addRenderable(text);
 
     //agregamos la info de la basura a la capa
-    polygonLayer.addRenderable(get_polygon(trash_coords));
+    textLayer.addRenderable(get_polygon(trash_coords));
 }
 
-set_layer_display(polygonLayer, false);
-*/
-
-let GROUPS = [];
-
-const load_data = () => {
-    let files = [
-        "./data_cosmos.txt",
-        "./data_iridium.txt"
-    ];
-
-    let load_tasks = [];
-
-    for (let file in files) {
-        let new_task = new Promise((resolve, reject) => {
-            fetch(files[file])
-            .then(response => response.text())
-            .then(content => {
-
-                //separamos la info por linea
-                content = content.split(/\n/);
-
-                //counter para saber en que linea vamos, se usa de 0 a 2 y se reinicia
-                let endofline_counter = 0;
-                let new_groups_row = {
-                    trash : [],
-                    layer : null
-                };
-                let new_trash_row = null;
-
-                content.forEach(line => {
-
-                    if (endofline_counter == 0) {
-                        new_trash_row = {
-                            name : null,
-                            line1 : null,
-                            line2 : null
-                        };
-                    }
-
-                    switch (endofline_counter) {
-                        case 0:
-                            new_trash_row.name = line;
-                            break;
-                        case 1:
-                            new_trash_row.line1 = line;
-                            break;
-                        case 2:
-                            new_trash_row.line2 = line;
-
-                            //creamos capa
-                            create_layer_from_data(new_trash_row);
-
-                            new_groups_row.trash.push(new_trash_row);
-                            break;
-                    }
-
-                    endofline_counter = (endofline_counter == 2) ? 0 : endofline_counter+1;
-                });
-
-                GROUPS.push(new_groups_row);
-
-                resolve(1);
-            });
-        });
-
-        load_tasks.push(new_task);
-    }
-
-    Promise.all(load_tasks).then(r => {
-        console.log(GROUPS);
-    });
-}
-
-load_data();
 
 
-const create_layer_from_data = (row) => {
-    //bueno ya tu aqui haces eso y dejame ver que mas era
-    //si funciona, o bueno hay que calarla ahorita
-}
 
-const input_search_behaviur = () => {
-
-    let input = document.querySelector("#group-search");
-    let group_items_container = document.querySelector(".tg-items-container");
-    
-    input.addEventListener("keyup", event => {
-        let value = event.target.value;
-        group_items_container.querySelectorAll("p").forEach(each => {
-            let content = each.textContent;
-            if (content.toUpperCase().search(value) == 0 || content.toLowerCase().search(value) == 0) {
-                each.classList.remove("hidden");
-            } else {
-                each.classList.add("hidden");
-            }
-        });
-    });
-}
-input_search_behaviur();
 
 
 
@@ -294,7 +208,4 @@ wwd.addEventListener("mousemove", handlePick);
 
 // Listen for taps on mobile devices and highlight the placemarks that the user taps.
 var tapRecognizer = new WorldWind.TapRecognizer(wwd, handlePick);
-
-
-
 
