@@ -101,9 +101,9 @@ wwd.addLayer(new WorldWind.CoordinatesDisplayLayer(wwd));
 wwd.addLayer(new WorldWind.ViewControlsLayer(wwd));
 
 //creamos una nueva capa
-var polygonLayer = new WorldWind.RenderableLayer();
+//var polygonLayer = new WorldWind.RenderableLayer();
 //la agregamos a worldwind
-wwd.addLayer(polygonLayer);
+//wwd.addLayer(polygonLayer);
 
 //guardamos la fecha de este momento y definimos algunas constantes de tiempo en milisegundos
 let current_date = new Date();
@@ -112,6 +112,8 @@ const ONE_HOUR = 1000 * 60 * 60;
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
 
+
+/*
 //prueba de prediccion COMENTAR ESTO
 for (let i = 0; i < 100; i++) {
 
@@ -127,8 +129,88 @@ for (let i = 0; i < 100; i++) {
     polygonLayer.addRenderable(get_polygon(trash_coords));
 }
 
+set_layer_display(polygonLayer, false);
+*/
+
+let GROUPS = [];
+
+const load_data = () => {
+    let files = [
+        "./data_cosmos.txt",
+        "./data_iridium.txt"
+    ];
+
+    let load_tasks = [];
+
+    for (let file in files) {
+        let new_task = new Promise((resolve, reject) => {
+            fetch(files[file])
+            .then(response => response.text())
+            .then(content => {
+
+                //separamos la info por linea
+                content = content.split(/\n/);
+
+                //counter para saber en que linea vamos, se usa de 0 a 2 y se reinicia
+                let endofline_counter = 0;
+                let new_groups_row = {
+                    trash : [],
+                    layer : null
+                };
+                let new_trash_row = null;
+
+                content.forEach(line => {
+
+                    if (endofline_counter == 0) {
+                        new_trash_row = {
+                            name : null,
+                            line1 : null,
+                            line2 : null
+                        };
+                    }
+
+                    switch (endofline_counter) {
+                        case 0:
+                            new_trash_row.name = line;
+                            break;
+                        case 1:
+                            new_trash_row.line1 = line;
+                            break;
+                        case 2:
+                            new_trash_row.line2 = line;
+
+                            //creamos capa
+                            create_layer_from_data(new_trash_row);
+
+                            new_groups_row.trash.push(new_trash_row);
+                            break;
+                    }
+
+                    endofline_counter = (endofline_counter == 2) ? 0 : endofline_counter+1;
+                });
+
+                GROUPS.push(new_groups_row);
+
+                resolve(1);
+            });
+        });
+
+        load_tasks.push(new_task);
+    }
+
+    Promise.all(load_tasks).then(r => {
+        console.log(GROUPS);
+    });
+}
+
+load_data();
 
 
+const create_layer_from_data = (row) => {
+    console.log(row);
+    //bueno ya tu aqui haces eso y dejame ver que mas era
+    //si funciona, o bueno hay que calarla ahorita
+}
 
 
 
