@@ -1,7 +1,5 @@
-// Sample TLE
 const get_coords = (tleLine1, tleLine2, date) => {
-  //var tleLine1 = '1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996',
-  //tleLine2 = '2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400';
+  //esta funcion nos permite traducir la info en formato TLE, regresa las coordenadas
 
   // Initialize a satellite record
   var satrec = satellite.twoline2satrec(tleLine1, tleLine2);
@@ -51,6 +49,18 @@ const get_polygon = (coords) => {
   //esta funcion es para crear una objeto con dimenciones predefinidas pero con
   //coordenadas como paremetro
 
+  //creamos una forma con los atributos por defecto
+  var polygonAttributes = new WorldWind.ShapeAttributes(null);
+  //le agregamos el colore del interior en formato rgba
+  polygonAttributes.interiorColor = new WorldWind.Color(1, 0, 0, 0.75);
+  //definimos el color del border del objeto
+  polygonAttributes.outlineColor = WorldWind.Color.BLUE;
+  //permitimos que se visualice el borde del objeto (desactivado por defecto)
+  polygonAttributes.drawOutline = true;
+  //aplicamos matices de la luz en el objeto (desactivado por defecto)
+  polygonAttributes.applyLighting = true;
+
+  //el valor que usamos para darle 2 dimenciones al objeto de la basura, solo 2 para no impactar mucho en memoria
   const trash_size = 1;
 
   var boundaries = [];
@@ -86,6 +96,12 @@ const get_polygon = (coords) => {
   return polygon;
 };
 
+const set_layer_display = (layer, is_visible) => {
+  //funcion para ocular capas
+
+  layer.opacity = is_visible ? 1 : 0;
+};
+
 //creamos el canvas
 var wwd = new WorldWind.WorldWindow("canvasOne");
 
@@ -101,56 +117,48 @@ wwd.addLayer(new WorldWind.CoordinatesDisplayLayer(wwd));
 //agregamos la capa para los controles (botones) del mundo
 wwd.addLayer(new WorldWind.ViewControlsLayer(wwd));
 
-//creamos una nueva capa
+//creamos  capa 2
 var polygonLayer = new WorldWind.RenderableLayer();
 //la agregamos a worldwind
 wwd.addLayer(polygonLayer);
 
-//creamos una forma con los atributos por defecto
-var polygonAttributes = new WorldWind.ShapeAttributes(null);
-//le agregamos el colore del interior en formato rgba
-polygonAttributes.interiorColor = new WorldWind.Color(1, 0, 0, 0.75);
-//definimos el color del border del objeto
-polygonAttributes.outlineColor = WorldWind.Color.BLUE;
-//permitimos que se visualice el borde del objeto (desactivado por defecto)
-polygonAttributes.drawOutline = true;
-//aplicamos matices de la luz en el objeto (desactivado por defecto)
-polygonAttributes.applyLighting = true;
+//creamos  capa 3
+var polygonLayer3 = new WorldWind.RenderableLayer();
+//la agregamos a worldwind
+wwd.addLayer(polygonLayer3);
+
+//creamos una nueva capa
+var polygonLayer2 = new WorldWind.RenderableLayer();
+//la agregamos a worldwind
+wwd.addLayer(polygonLayer2);
 
 //guardamos la fecha de este momento y definimos algunas constantes de tiempo en milisegundos
 let current_date = new Date();
-const one_minute = 1000 * 60;
-const one_hour = 1000 * 60 * 60;
-const one_day = 1000 * 60 * 60 * 24;
+const ONE_MINUTE = 1000 * 60;
+const ONE_HOUR = 1000 * 60 * 60;
+const ONE_DAY = 1000 * 60 * 60 * 24;
 
+//prueba de prediccion COMENTAR ESTO
 for (let i = 0; i < 100; i++) {
   //obtenemos la latitud, longitud y altitud de la basura de ejemplo
   let trash_coords = get_coords(
     "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
     "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
     //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-    new Date(current_date.getMilliseconds() + one_minute * i)
+    new Date(current_date.getMilliseconds() + ONE_MINUTE * i)
   );
 
   //agregamos la info de la basura a la capa
   polygonLayer.addRenderable(get_polygon(trash_coords));
 }
 
-//polygonLayer.enabled = false;
-//polygonLayer.opacity = 0;
-console.log(polygonLayer);
-
-// Set the picking event handling.
-
+//lo sigueinte es para reconocer los objetos que reciben un click, estos se iran agregando al array de highlightedItems
 var highlightedItems = [];
-
 var handlePick = function (o) {
   // The input argument is either an Event or a TapRecognizer. Both have the same properties for determining
   // the mouse or tap location.
   var x = o.clientX,
     y = o.clientY;
-
-  console.log(x, y);
 
   var redrawRequired = highlightedItems.length > 0;
 
@@ -179,13 +187,12 @@ var handlePick = function (o) {
   //CHEQUEN QUE PICK LIST TIENE EL RESULTADO DEL CLICK
   //SI SE DETECTA ALGO EL LENGTH DE PICK SE AUMENTA
 
-  console.log(pickList);
-
   // Highlight the items picked.
   if (pickList.objects.length > 0) {
     for (var p = 0; p < pickList.objects.length; p++) {
       if (pickList.objects[p].isOnTop) {
         pickList.objects[p].userObject.highlighted = true;
+        //se imprime el objeto que recibe un click
         console.log(pickList.objects[p].userObject);
         highlightedItems.push(pickList.objects[p].userObject);
       }
@@ -204,18 +211,81 @@ wwd.addEventListener("mousemove", handlePick);
 // Listen for taps on mobile devices and highlight the placemarks that the user taps.
 var tapRecognizer = new WorldWind.TapRecognizer(wwd, handlePick);
 
-var trash = [];
+trash = [];
 
-const url = "./data.txt";
-fetch(url, {
-  mode: "no-cors",
-})
-  .then((response) => response.text())
-  .catch((e) => console.error(e))
-  .then((content) => {
-    let lines = content.split(/\COSMOS/);
-    lines.forEach((line) => {
-      datas = line.split(/\n/);
-      console.log(line);
+const divList = document.getElementById("items-list");
+
+const dataFromText = async () => {
+  await fetch("./data.txt", {
+    mode: "no-cors",
+  })
+    .then((response) => response.text())
+    .catch((e) => console.error(e))
+    .then((content) => {
+      let lines = content.split(/\COSMOS/);
+      lines.forEach((line) => {
+        datas = line.split(/\n/);
+
+        //prueba de prediccion COMENTAR ESTO
+
+        //obtenemos la latitud, longitud y altitud de la basura de ejemplo
+        if (datas[1] && datas[2]) {
+          let trash_coords = get_coords(
+            `${datas[1]}`,
+            `${datas[2]}`,
+            //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+            new Date(current_date.getMilliseconds())
+          );
+
+          //agregamos la info de la basura a la capa
+          polygonLayer2.addRenderable(get_polygon(trash_coords));
+        }
+      });
     });
-  });
+  await console.log(trash);
+};
+
+const dataFromText2 = async () => {
+  const url = "./datas.txt";
+  await fetch(url, {
+    mode: "no-cors",
+  })
+    .then((response) => response.text())
+    .catch((e) => console.error(e))
+    .then((content) => {
+      let lines = content.split(/\IRIDIUM/);
+      lines.forEach((line) => {
+        datas = line.split(/\n/);
+        console.log(datas);
+
+        //prueba de prediccion COMENTAR ESTO
+        let current_date = new Date();
+        //obtenemos la latitud, longitud y altitud de la basura de ejemplo
+        if (datas[1] < 0 && datas[2] < 0) return;
+        let trash_coords2 = get_coords(
+          `${datas[1] ? datas[1] : 0}`,
+          `${datas[2] ? datas[2] : 0}`,
+          //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+          new Date(current_date.getMilliseconds())
+        );
+
+        //agregamos la info de la basura a la capa
+        polygonLayer3.addRenderable(get_polygon(trash_coords2));
+      });
+    });
+
+  await console.log(trash);
+};
+
+dataFromText2();
+dataFromText();
+
+function modifyCosmos() {
+  set_layer_display(polygonLayer3, false);
+  set_layer_display(polygonLayer2, true);
+}
+
+function modifyIRIDIUM() {
+  set_layer_display(polygonLayer2, false);
+  set_layer_display(polygonLayer3, true);
+}
