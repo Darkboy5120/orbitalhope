@@ -1,3 +1,8 @@
+.hidden {
+    display: none !important;
+}
+
+
 body {
     background-color: black;
     overflow: hidden;
@@ -22,8 +27,6 @@ canvas {
     background-color: rgb(230, 230, 230);
     margin-top: 1rem;
     border-top: 1px solid rgb(150, 150, 150);
-    padding-left: .5rem;
-    padding-right: .5rem;
     max-height: 30vh;
     overflow-y: scroll;
 }
@@ -31,6 +34,12 @@ canvas {
     padding: 0;
     margin: 0;
     border-bottom: 1px solid rgb(150, 150, 150);
+    cursor: pointer;
+    padding-left: .5rem;
+    padding-right: .5rem;
+}
+.tg-items-container > p:hover {
+    background-color: rgb(105, 236, 123);
 }
 
 .search-input {

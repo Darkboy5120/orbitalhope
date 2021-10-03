@@ -81,8 +81,10 @@ const set_layer_display = (layer, is_visible) => {
     //funcion para ocular capas
 
     layer.opacity = (is_visible) ? 1 : 0;
-}
 
+    //es esta, solo modifica si te fijas, en el documento de docs, todos tienen su id
+    //el m6 lo esta haciendo Omar, aun no termina
+}
 
 
 //creamos el canvas
@@ -207,11 +209,28 @@ load_data();
 
 
 const create_layer_from_data = (row) => {
-    console.log(row);
     //bueno ya tu aqui haces eso y dejame ver que mas era
     //si funciona, o bueno hay que calarla ahorita
 }
 
+const input_search_behaviur = () => {
+
+    let input = document.querySelector("#group-search");
+    let group_items_container = document.querySelector(".tg-items-container");
+    
+    input.addEventListener("keyup", event => {
+        let value = event.target.value;
+        group_items_container.querySelectorAll("p").forEach(each => {
+            let content = each.textContent;
+            if (content.search(value) == 0) {
+                each.classList.remove("hidden");
+            } else {
+                each.classList.add("hidden");
+            }
+        });
+    });
+}
+input_search_behaviur();
 
 
 
