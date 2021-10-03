@@ -112,73 +112,89 @@ const ONE_DAY = 1000 * 60 * 60 * 24;
 let GROUPS = [];
 
 const load_data = () => {
-    let files = [
-        "./data_cosmos.txt",
-        "./data_iridium.txt"
-    ];
-
+    let files = ["./data_cosmos.txt", "./data_iridium.txt"];
+  
     let load_tasks = [];
-
+  
     for (let file in files) {
-        let new_task = new Promise((resolve, reject) => {
-            fetch(files[file])
-            .then(response => response.text())
-            .then(content => {
-
-                //separamos la info por linea
-                content = content.split(/\n/);
-
-                //counter para saber en que linea vamos, se usa de 0 a 2 y se reinicia
-                let endofline_counter = 0;
-                let new_groups_row = {
-                    trash : [],
-                    layer : null
+      const name = files[file].split(/\//)[1];
+  
+      let new_task = new Promise((resolve, reject) => {
+        fetch(files[file])
+          .then((response) => response.text())
+          .then((content) => {
+            //separamos la info por linea
+  
+            content = content.split(/\n/);
+  
+            //counter para saber en que linea vamos, se usa de 0 a 2 y se reinicia
+            let endofline_counter = 0;
+            let new_groups_row = {
+              trash: [],
+              layer: name.split(/\./)[0],
+            };
+            let new_trash_row = null;
+  
+            content.forEach((line) => {
+              if (endofline_counter == 0) {
+                new_trash_row = {
+                  name: null,
+                  line1: null,
+                  line2: null,
                 };
-                let new_trash_row = null;
-
-                content.forEach(line => {
-
-                    if (endofline_counter == 0) {
-                        new_trash_row = {
-                            name : null,
-                            line1 : null,
-                            line2 : null
-                        };
-                    }
-
-                    switch (endofline_counter) {
-                        case 0:
-                            new_trash_row.name = line;
-                            break;
-                        case 1:
-                            new_trash_row.line1 = line;
-                            break;
-                        case 2:
-                            new_trash_row.line2 = line;
-
-                            //creamos capa
-                            create_layer_from_data(new_trash_row);
-
-                            new_groups_row.trash.push(new_trash_row);
-                            break;
-                    }
-
-                    endofline_counter = (endofline_counter == 2) ? 0 : endofline_counter+1;
-                });
-
-                GROUPS.push(new_groups_row);
-
-                resolve(1);
+              }
+  
+              switch (endofline_counter) {
+                case 0:
+                  new_trash_row.name = line;
+                  break;
+                case 1:
+                  new_trash_row.line1 = line;
+                  break;
+                case 2:
+                  new_trash_row.line2 = line;
+  
+                  new_groups_row.trash.push(new_trash_row);
+                  break;
+              }
+  
+              endofline_counter =
+                endofline_counter == 2 ? 0 : endofline_counter + 1;
             });
-        });
+  
+            //creamos una nueva capa, la ocultamos y la agregamos al row del grupo
+            let new_layer = new WorldWind.RenderableLayer();
+            set_layer_display(new_layer, false);
+            new_groups_row.layer = new_layer;
+            wwd.addLayer(new_layer);
 
-        load_tasks.push(new_task);
+            GROUPS.push(new_groups_row);
+  
+            const list = document.getElementById("list-items");
+            var el = document.createElement("p");
+            el.innerHTML += `${name.split(/\./)[0]}`;
+            el.setAttribute("value", name.split(/\./)[0]);
+            list.appendChild(el);
+            el.addEventListener("click", function (e) {
+                for (let group in GROUPS) {
+                    if (group == file) {
+                        set_layer_display(GROUPS[group].layer ,true);
+                    } else {
+                        set_layer_display(GROUPS[group].layer ,false);
+                    }
+                }
+            });
+            fill_layer_from_data(file);
+            resolve(1);
+          });
+      });
     }
-
-    Promise.all(load_tasks).then(r => {
-        console.log(GROUPS);
+  
+    Promise.all(load_tasks).then((r) => {
+      console.log(GROUPS);
+      //console.log(r);
     });
-}
+  };
 
 const load_hour_display = () => {
 
@@ -217,10 +233,27 @@ const input_search_behaviur = () => {
     });
 }
 
-const create_layer_from_data = (row) => {
-    //bueno ya tu aqui haces eso y dejame ver que mas era
-    //si funciona, o bueno hay que calarla ahorita
-}
+const fill_layer_from_data = (groups_index) => {
+    GROUPS[groups_index].trash.forEach((t) => {
+        let skip_object = false;
+        let trash_coords;
+
+      try {
+        trash_coords = get_coords(
+            t.line1,
+            t.line2,
+            new Date()
+          );
+      } catch (e) {
+          skip_object = true;
+      }
+
+      if (!skip_object) {
+        GROUPS[groups_index].layer.addRenderable(get_polygon(trash_coords));
+      }
+    });
+  };
+  
 
 
 load_hour_display();
@@ -272,8 +305,6 @@ const test1 = () => {
 
     //set_layer_display(polygonLayer, false);
 }
-
-test1();
 
 
 
