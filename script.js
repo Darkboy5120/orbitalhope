@@ -102,37 +102,12 @@ wwd.addLayer(new WorldWind.CoordinatesDisplayLayer(wwd));
 //agregamos la capa para los controles (botones) del mundo
 wwd.addLayer(new WorldWind.ViewControlsLayer(wwd));
 
-//creamos una nueva capa
-//var polygonLayer = new WorldWind.RenderableLayer();
-//la agregamos a worldwind
-//wwd.addLayer(polygonLayer);
-
 //guardamos la fecha de este momento y definimos algunas constantes de tiempo en milisegundos
 let current_date = new Date();
 const ONE_MINUTE = 1000 * 60;
 const ONE_HOUR = 1000 * 60 * 60;
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
-
-
-/*
-//prueba de prediccion COMENTAR ESTO
-for (let i = 0; i < 100; i++) {
-
-    //obtenemos la latitud, longitud y altitud de la basura de ejemplo
-    let trash_coords = get_coords(
-        "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
-        "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
-        //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-        new Date(current_date.getMilliseconds()+(ONE_MINUTE*i))
-    );
-
-    //agregamos la info de la basura a la capa
-    polygonLayer.addRenderable(get_polygon(trash_coords));
-}
-
-set_layer_display(polygonLayer, false);
-*/
 
 let GROUPS = [];
 
@@ -205,12 +180,23 @@ const load_data = () => {
     });
 }
 
-load_data();
+const load_hour_display = () => {
 
+    const update_hour_display = () => {
+        let current_hour_el = document.querySelector("#current-hour");
+        let current_date = new Date();
+        let hours = current_date.getHours();
+        hours = (hours < 10) ? "0" + hours : hours;
+        let minutes = current_date.getMinutes();
+        minutes = (minutes < 10) ? "0" + minutes : minutes;
+        let seconds = current_date.getSeconds();
+        seconds = (seconds < 10) ? "0" + seconds : seconds;
+        current_hour_el.textContent = hours + ":" + minutes + ":" + seconds;
+    }
 
-const create_layer_from_data = (row) => {
-    //bueno ya tu aqui haces eso y dejame ver que mas era
-    //si funciona, o bueno hay que calarla ahorita
+    window.setInterval(() => {
+        update_hour_display();
+    }, 1000);
 }
 
 const input_search_behaviur = () => {
@@ -230,7 +216,64 @@ const input_search_behaviur = () => {
         });
     });
 }
+
+const create_layer_from_data = (row) => {
+    //bueno ya tu aqui haces eso y dejame ver que mas era
+    //si funciona, o bueno hay que calarla ahorita
+}
+
+
+load_hour_display();
+load_data();
 input_search_behaviur();
+
+
+const get_text = (content, coords) => {
+    let text;
+    let textAttributes = new WorldWind.TextAttributes(null);
+
+    // Set up the common text attributes.
+    textAttributes.color = WorldWind.Color.RED;
+    // Set the depth test property such that the terrain does not obscure the text.
+    textAttributes.depthTest = false;
+
+    let position = new WorldWind.Position(
+        get_polygon(coords).referencePosition.latitude,
+        get_polygon(coords).referencePosition.longitude,
+        get_polygon(coords).referencePosition.altitude
+    );
+    text = new WorldWind.GeographicText(position, content);
+
+    // Set the text attributes for this shape.
+    text.attributes = textAttributes;
+
+    return text;
+}
+
+const test1 = () => {
+    //creamos una nueva capa
+    var polygonLayer = new WorldWind.RenderableLayer();
+    //la agregamos a worldwind
+    wwd.addLayer(polygonLayer);
+
+    //prueba de prediccion COMENTAR ESTO
+    for (let i = 0; i < 100; i++) {
+        let trash_coords = get_coords(
+            "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
+            "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
+            //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+            new Date(current_date.getMilliseconds()+(ONE_MINUTE*i))
+        );
+    
+        //agregamos la info de la basura a la capa
+        polygonLayer.addRenderable(get_text("basura", trash_coords));
+        polygonLayer.addRenderable(get_polygon(trash_coords));
+    }
+
+    //set_layer_display(polygonLayer, false);
+}
+
+test1();
 
 
 
