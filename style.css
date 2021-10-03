@@ -1,0 +1,105 @@
+body {
+    background-color: black;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+canvas {
+    height: 100vh;
+    width: 100vw;
+}
+
+.trash-groups {
+    position: fixed;
+    top: 60vh;
+    right: 2vw;
+    border-radius: 5px;
+    background-color: rgb(230, 230, 230);
+    overflow: hidden;
+}
+.tg-items-container {
+    background-color: rgb(230, 230, 230);
+    margin-top: 1rem;
+    border-top: 1px solid rgb(150, 150, 150);
+    padding-left: .5rem;
+    padding-right: .5rem;
+    max-height: 30vh;
+    overflow-y: scroll;
+}
+.tg-items-container > p {
+    padding: 0;
+    margin: 0;
+    border-bottom: 1px solid rgb(150, 150, 150);
+}
+
+.search-input {
+    position: relative;
+    display: flex;
+    color: rgb(150, 150, 150);
+    padding: .5rem;
+}
+.search-input > i {
+    position: absolute;
+    left: 1rem;
+    align-self: center;
+}
+.search-input > input {
+    padding: .2rem;
+    padding-left: 2rem;
+    background-color: rgb(230, 230, 230);
+    border: 2px solid rgb(150, 150, 150);
+    border-radius: 5px;
+}
+
+#orbital-params {
+    position: fixed;
+    top: 20vh;
+    left: 2vw;
+    width: 15vw;
+}
+#geographic-location {
+    position: fixed;
+    top: 20vh;
+    right: 2vw;
+    width: 15vw;
+}
+
+.nice-table {
+    background-color: rgb(230, 230, 230);
+    border-radius: 5px;
+    overflow: hidden;
+}
+.nice-table > p{
+    background-color: gold;
+    color: black;
+    font-size: 2rem;
+    margin: 0;
+    padding: .2rem;
+}
+.nt-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    background-color: rgb(84, 207, 47);
+}
+.nt-container > span {
+    height: 3rem;
+    padding: .1rem;
+    border: 1px solid black;
+}
+
+.nt-row {
+    background-color: rgb(84, 207, 47);
+    display: flex;
+    position: relative;
+    margin: .1rem;
+    min-height: 2rem;
+}
+.nt-row > * {
+    width: 50%;
+    margin: .1rem;
+}
+.nt-row > *:first-child {
+    border-right: 1px solid black;
+}
