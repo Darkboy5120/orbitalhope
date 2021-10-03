@@ -123,136 +123,79 @@ const one_minute = 1000 * 60;
 const one_hour = 1000 * 60 * 60;
 const one_day = 1000 * 60 * 60 * 24;
 
-let cordenadas = [
-  get_coords(
+for (let i = 0; i < 100; i++) {
+  //obtenemos la latitud, longitud y altitud de la basura de ejemplo
+  let trash_coords = get_coords(
     "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
     "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
     //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-    new Date(current_date.getMilliseconds() + one_minute * 1)
-  ),
-  get_coords(
-    "1 49122U 21079A   21274.46439531  .00000051  00000-0  21392-4 0  9995",
-    "2 49122  98.2820 345.6698 0001582 159.7763 200.3500 14.57684755  3548",
-    //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-    new Date(current_date.getMilliseconds() + one_minute * 2)
-  ),
-  get_coords(
-    "1 49123U 21079B   21274.22918002  .00000497  00000-0  45952-4 0  9997",
-    "2 49123  98.3179 346.9523 0137518 343.6837  15.9975 14.93117043  3595",
-    //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-    new Date(current_date.getMilliseconds() + one_minute * 3)
-  ),
-  get_coords(
-    "1 49124U 21079C   21271.63520353  .00002623  00000-0  14257-3 0  9994",
-    "2 49124  98.4033 343.4576 0221837 235.7838 122.2185 14.96969712  3132",
-    //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-    new Date(current_date.getMilliseconds() + one_minute * 4)
-  ),
-];
-const renderObjecbs = (data, capa, show) => {
-  if (show == true) {
-    for (let i = 0; i < cordenadas.length; i++) {
-      //agregamos la info de la basura a la capa
-      capa.addRenderable(get_polygon(cordenadas[i]));
-    }
-    capa.opacity = 1;
-  } else {
-    capa.opacity = 0;
-    for (let i = 0; i < cordenadas.length; i++) {
-      //agregamos la info de la basura a la capa
+    new Date(current_date.getMilliseconds() + one_minute * i)
+  );
 
-      polygonLayer.removeAllRenderables();
-    }
-  }
-};
+  //agregamos la info de la basura a la capa
+  polygonLayer.addRenderable(get_polygon(trash_coords));
+}
 
-renderObjecbs(cordenadas, polygonLayer, true);
-
-const getDatasetsInfo = async (link) => {
-  /*   var result = null;
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.open("GET", link, true);
-  xmlhttp.send(null);
-  var txt = xmlhttp.responseText;
-  console.log(txt)
-  if (xmlhttp.status == 200) {
-    result = xmlhttp.responseText;
-  }
-  console.log(result);
-  return result;
- */
-
-  /* try {
-    const file = await fetch(
-      "https://celestrak.com/NORAD/elements/tle-new.txt",
-      {
-        method: "GET",
-        headers: new Headers({ "Content-type": "text/plain" }),
-        mode: "no-cors", // <---
-        cache: "default",
-      }
-    );
-    console.log(file.text());
-  } catch (error) {
-    console.log(error);
-  } */
-
-  await fetch("https://celestrak.com/NORAD/elements/tle-new.txt", {
-    method: "GET",
-    headers: new Headers({ "Content-type": "text/plain" }),
-    mode: "no-cors",
-    cache: "default",
-  }).then((res) => console.log(res.text()));
-};
-const info = getDatasetsInfo(
-  "https://celestrak.com/NORAD/elements/tle-new.txt"
-);
-console.log(info);
+//polygonLayer.enabled = false;
+//polygonLayer.opacity = 0;
+console.log(polygonLayer);
 
 // Set the picking event handling.
-/*
+
 var highlightedItems = [];
 
 var handlePick = function (o) {
-    // The input argument is either an Event or a TapRecognizer. Both have the same properties for determining
-    // the mouse or tap location.
-    var x = o.clientX,
-        y = o.clientY;
+  // The input argument is either an Event or a TapRecognizer. Both have the same properties for determining
+  // the mouse or tap location.
+  var x = o.clientX,
+    y = o.clientY;
 
-    var redrawRequired = highlightedItems.length > 0;
+  console.log(x, y);
 
-    // De-highlight any highlighted placemarks.
-    for (var h = 0; h < highlightedItems.length; h++) {
-        highlightedItems[h].highlighted = false;
+  var redrawRequired = highlightedItems.length > 0;
+
+  // De-highlight any highlighted placemarks.
+  for (var h = 0; h < highlightedItems.length; h++) {
+    highlightedItems[h].highlighted = false;
+  }
+  highlightedItems = [];
+
+  // Perform the pick. Must first convert from window coordinates to canvas coordinates, which are
+  // relative to the upper left corner of the canvas rather than the upper left corner of the page.
+  var rectRadius = 50,
+    pickPoint = wwd.canvasCoordinates(x, y),
+    pickRectangle = new WorldWind.Rectangle(
+      pickPoint[0] - rectRadius,
+      pickPoint[1] + rectRadius,
+      2 * rectRadius,
+      2 * rectRadius
+    );
+
+  var pickList = wwd.pickShapesInRegion(pickRectangle);
+  if (pickList.objects.length > 0) {
+    redrawRequired = true;
+  }
+
+  //CHEQUEN QUE PICK LIST TIENE EL RESULTADO DEL CLICK
+  //SI SE DETECTA ALGO EL LENGTH DE PICK SE AUMENTA
+
+  console.log(pickList);
+
+  // Highlight the items picked.
+  if (pickList.objects.length > 0) {
+    for (var p = 0; p < pickList.objects.length; p++) {
+      if (pickList.objects[p].isOnTop) {
+        pickList.objects[p].userObject.highlighted = true;
+        console.log(pickList.objects[p].userObject);
+        highlightedItems.push(pickList.objects[p].userObject);
+      }
     }
-    highlightedItems = [];
+  }
 
-    // Perform the pick. Must first convert from window coordinates to canvas coordinates, which are
-    // relative to the upper left corner of the canvas rather than the upper left corner of the page.
-    var rectRadius = 50,
-        pickPoint = wwd.canvasCoordinates(x, y),
-        pickRectangle = new WorldWind.Rectangle(pickPoint[0] - rectRadius, pickPoint[1] + rectRadius,
-            2 * rectRadius, 2 * rectRadius);
-
-    var pickList = wwd.pickShapesInRegion(pickRectangle);
-    if (pickList.objects.length > 0) {
-        redrawRequired = true;
-    }
-
-    // Highlight the items picked.
-    if (pickList.objects.length > 0) {
-        for (var p = 0; p < pickList.objects.length; p++) {
-            if (pickList.objects[p].isOnTop) {
-                pickList.objects[p].userObject.highlighted = true;
-                highlightedItems.push(pickList.objects[p].userObject);
-            }
-        }
-    }
-
-    // Update the window if we changed anything.
-    if (redrawRequired) {
-        wwd.redraw();
-    }
+  // Update the window if we changed anything.
+  if (redrawRequired) {
+    wwd.redraw();
+  }
 };
 
 // Listen for mouse moves and highlight the placemarks that the cursor rolls over.
@@ -260,4 +203,19 @@ wwd.addEventListener("mousemove", handlePick);
 
 // Listen for taps on mobile devices and highlight the placemarks that the user taps.
 var tapRecognizer = new WorldWind.TapRecognizer(wwd, handlePick);
-*/
+
+var trash = [];
+
+const url = "./data.txt";
+fetch(url, {
+  mode: "no-cors",
+})
+  .then((response) => response.text())
+  .catch((e) => console.error(e))
+  .then((content) => {
+    let lines = content.split(/\COSMOS/);
+    lines.forEach((line) => {
+      datas = line.split(/\n/);
+      console.log(line);
+    });
+  });
