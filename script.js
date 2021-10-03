@@ -100,6 +100,9 @@ const set_layer_display = (layer, is_visible) => {
   //funcion para ocular capas
 
   layer.opacity = is_visible ? 1 : 0;
+
+  //es esta, solo modifica si te fijas, en el documento de docs, todos tienen su id
+  //el m6 lo esta haciendo Omar, aun no termina
 };
 
 //creamos el canvas
@@ -117,20 +120,10 @@ wwd.addLayer(new WorldWind.CoordinatesDisplayLayer(wwd));
 //agregamos la capa para los controles (botones) del mundo
 wwd.addLayer(new WorldWind.ViewControlsLayer(wwd));
 
-//creamos  capa 2
-var polygonLayer = new WorldWind.RenderableLayer();
-//la agregamos a worldwind
-wwd.addLayer(polygonLayer);
-
-//creamos  capa 3
-var polygonLayer3 = new WorldWind.RenderableLayer();
-//la agregamos a worldwind
-wwd.addLayer(polygonLayer3);
-
 //creamos una nueva capa
-var polygonLayer2 = new WorldWind.RenderableLayer();
+//var polygonLayer = new WorldWind.RenderableLayer();
 //la agregamos a worldwind
-wwd.addLayer(polygonLayer2);
+//wwd.addLayer(polygonLayer);
 
 //guardamos la fecha de este momento y definimos algunas constantes de tiempo en milisegundos
 let current_date = new Date();
@@ -138,19 +131,148 @@ const ONE_MINUTE = 1000 * 60;
 const ONE_HOUR = 1000 * 60 * 60;
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
+/*
 //prueba de prediccion COMENTAR ESTO
 for (let i = 0; i < 100; i++) {
   //obtenemos la latitud, longitud y altitud de la basura de ejemplo
   let trash_coords = get_coords(
-    "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
-    "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
-    //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
-    new Date(current_date.getMilliseconds() + ONE_MINUTE * i)
+      "1 22675U 93036A   21269.40469457  .00000015  00000-0  15215-4 0  9996",
+      "2 22675  74.0378 244.8818 0025430 341.1003  18.9201 14.32581054477400",
+      //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+      new Date(current_date.getMilliseconds()+(ONE_MINUTE*i))
   );
-
   //agregamos la info de la basura a la capa
   polygonLayer.addRenderable(get_polygon(trash_coords));
 }
+set_layer_display(polygonLayer, false);
+*/
+
+let GROUPS = [];
+
+const load_data = () => {
+  let files = ["./data_cosmos.txt", "./data_iridium.txt"];
+
+  let load_tasks = [];
+
+  for (let file in files) {
+    const name = files[file].split(/\//)[1];
+
+    let new_task = new Promise((resolve, reject) => {
+      fetch(files[file])
+        .then((response) => response.text())
+        .then((content) => {
+          //separamos la info por linea
+
+          content = content.split(/\n/);
+
+          //counter para saber en que linea vamos, se usa de 0 a 2 y se reinicia
+          let endofline_counter = 0;
+          let new_groups_row = {
+            trash: [],
+            layer: name.split(/\./)[0],
+          };
+          let new_trash_row = null;
+
+          content.forEach((line) => {
+            if (endofline_counter == 0) {
+              new_trash_row = {
+                name: null,
+                line1: null,
+                line2: null,
+              };
+            }
+
+            switch (endofline_counter) {
+              case 0:
+                new_trash_row.name = line;
+                break;
+              case 1:
+                new_trash_row.line1 = line;
+                break;
+              case 2:
+                new_trash_row.line2 = line;
+
+                new_groups_row.trash.push(new_trash_row);
+                break;
+            }
+
+            endofline_counter =
+              endofline_counter == 2 ? 0 : endofline_counter + 1;
+          });
+
+          GROUPS.push(new_groups_row);
+          console.log(new_groups_row);
+
+          const list = document.getElementById("list-items");
+          var el = document.createElement("p");
+          el.innerHTML += `${name.split(/\./)[0]}`;
+          el.setAttribute("value", name.split(/\./)[0]);
+          list.appendChild(el);
+          el.addEventListener("click", function (e) {
+            alert(this.getAttribute("value"));
+          });
+          create_layer_from_data(new_groups_row);
+          resolve(1);
+        });
+    });
+  }
+
+  Promise.all(load_tasks).then((r) => {
+    console.log(GROUPS);
+    console.log(r);
+  });
+};
+
+load_data();
+
+const create_layer_from_data = (row) => {
+  console.log(row);
+  //creamos una nueva capa
+  layer = new WorldWind.RenderableLayer();
+  //la agregamos a worldwind
+  wwd.addLayer(layer);
+  let current_date = new Date();
+
+  row.trash.forEach((t) => {
+    let trash_coords2 = get_coords(
+      `${t.line1}`,
+      `${t.line2}`,
+      //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+      new Date(current_date.getMilliseconds())
+    );
+
+    layer.addRenderable(get_polygon(trash_coords2));
+  });
+  //obtenemos la latitud, longitud y altitud de la basura de ejemplo
+  /*  for (let i = 0; i < 100; i++) { */
+  /*   let trash_coords2 = get_coords(
+    `${row.line1}`,
+    `${row.line2}`,
+    //aqui lo que hacemos es ir aumentando en un segundo mas cada iteracion
+    new Date(current_date.getMilliseconds())
+  ); */
+  /* 
+  polygonLayer3.addRenderable(get_polygon(trash_coords2));
+  set_layer_display(polygonLayer3, true); */
+};
+
+const input_search_behaviur = () => {
+  let input = document.querySelector("#group-search");
+  let group_items_container = document.querySelector(".tg-items-container");
+
+  input.addEventListener("keyup", (event) => {
+    let value = event.target.value;
+    group_items_container.querySelectorAll("p").forEach((each) => {
+      let content = each.textContent;
+      if (content.search(value) == 0) {
+        each.classList.remove("hidden");
+      } else {
+        each.classList.add("hidden");
+      }
+    });
+  });
+};
+input_search_behaviur();
 
 //lo sigueinte es para reconocer los objetos que reciben un click, estos se iran agregando al array de highlightedItems
 var highlightedItems = [];
@@ -211,11 +333,7 @@ wwd.addEventListener("mousemove", handlePick);
 // Listen for taps on mobile devices and highlight the placemarks that the user taps.
 var tapRecognizer = new WorldWind.TapRecognizer(wwd, handlePick);
 
-trash = [];
-
-const divList = document.getElementById("items-list");
-
-const dataFromText = async () => {
+/* const dataFromText = async () => {
   await fetch("./data.txt", {
     mode: "no-cors",
   })
@@ -279,13 +397,4 @@ const dataFromText2 = async () => {
 
 dataFromText2();
 dataFromText();
-
-function modifyCosmos() {
-  set_layer_display(polygonLayer3, false);
-  set_layer_display(polygonLayer2, true);
-}
-
-function modifyIRIDIUM() {
-  set_layer_display(polygonLayer2, false);
-  set_layer_display(polygonLayer3, true);
-}
+ */
