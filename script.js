@@ -81,8 +81,10 @@ const set_layer_display = (layer, is_visible) => {
     //funcion para ocular capas
 
     layer.opacity = (is_visible) ? 1 : 0;
-}
 
+    //es esta, solo modifica si te fijas, en el documento de docs, todos tienen su id
+    //el m6 lo esta haciendo Omar, aun no termina
+}
 
 
 //creamos el canvas
@@ -106,9 +108,6 @@ const ONE_MINUTE = 1000 * 60;
 const ONE_HOUR = 1000 * 60 * 60;
 const ONE_DAY = 1000 * 60 * 60 * 24;
 
-var text,
-textAttributes = new WorldWind.TextAttributes(null),
-textLayer = new WorldWind.RenderableLayer("textLayer");
 
 let GROUPS = [];
 
@@ -176,8 +175,9 @@ const load_data = () => {
         load_tasks.push(new_task);
     }
 
-    //agregamos la info de la basura a la capa
-    textLayer.addRenderable(get_polygon(trash_coords));
+    Promise.all(load_tasks).then(r => {
+        console.log(GROUPS);
+    });
 }
 
 const load_hour_display = () => {
@@ -337,4 +337,7 @@ wwd.addEventListener("mousemove", handlePick);
 
 // Listen for taps on mobile devices and highlight the placemarks that the user taps.
 var tapRecognizer = new WorldWind.TapRecognizer(wwd, handlePick);
+
+
+
 
