@@ -15,6 +15,17 @@ canvas {
     width: 100vw;
 }
 
+h1 {
+    position: fixed;
+    background-color: #3B4FBCCC;
+    top: 5vh;
+    left: 2vw;
+    margin: 0;
+    padding: .5rem 1rem;
+    border-radius: 5px;
+    color: white;
+}
+
 .trash-groups {
     position: fixed;
     top: 60vh;

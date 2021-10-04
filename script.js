@@ -55,7 +55,7 @@ const get_polygon = (coords) => {
     //le agregamos el colore del interior en formato rgba
     polygonAttributes.interiorColor = new WorldWind.Color(1, 0, 0, 0.75);
     //definimos el color del border del objeto
-    polygonAttributes.outlineColor = WorldWind.Color.BLUE;
+    polygonAttributes.outlineColor = WorldWind.Color.RED;
     //permitimos que se visualice el borde del objeto (desactivado por defecto)
     polygonAttributes.drawOutline = true;
     //aplicamos matices de la luz en el objeto (desactivado por defecto)
@@ -80,10 +80,13 @@ const get_polygon = (coords) => {
 const set_layer_display = (layer, is_visible) => {
     //funcion para ocular capas
 
-    layer.opacity = (is_visible) ? 1 : 0;
+    layer.enabled = (is_visible) ? true : false;
+    wwd.redraw();
 
     //es esta, solo modifica si te fijas, en el documento de docs, todos tienen su id
     //el m6 lo esta haciendo Omar, aun no termina
+
+    //PREDICT_LAYER.enabled = false;
 }
 
 
@@ -110,6 +113,12 @@ const ONE_DAY = 1000 * 60 * 60 * 24;
 
 
 let GROUPS = [];
+
+//para guardar el ultimo texto y eliminarlo correctamente
+LAST_TEXT = {
+    object: null,
+    layer : null
+};
 
 const load_data = () => {
     let files = ["./data_cosmos.txt", "./data_iridium.txt"];
@@ -176,6 +185,11 @@ const load_data = () => {
             el.setAttribute("value", name.split(/\./)[0]);
             list.appendChild(el);
             el.addEventListener("click", function (e) {
+                if (LAST_TEXT.object != null) {
+                    LAST_TEXT.layer.removeRenderable(LAST_TEXT.object);
+                    lastSelected = null;
+                }
+
                 for (let group in GROUPS) {
                     if (group == file) {
                         set_layer_display(GROUPS[group].layer ,true);
@@ -183,6 +197,7 @@ const load_data = () => {
                         set_layer_display(GROUPS[group].layer ,false);
                     }
                 }
+                set_layer_display(PREDICT_LAYER ,false);
             });
             fill_layer_from_data(file);
             resolve(1);
@@ -234,7 +249,7 @@ const input_search_behaviur = () => {
 }
 
 const fill_layer_from_data = (groups_index) => {
-    GROUPS[groups_index].trash.forEach((t) => {
+    GROUPS[groups_index].trash.forEach((t, i) => {
         let skip_object = false;
         let trash_coords;
 
@@ -249,7 +264,10 @@ const fill_layer_from_data = (groups_index) => {
       }
 
       if (!skip_object) {
-        GROUPS[groups_index].layer.addRenderable(get_polygon(trash_coords));
+        let new_polygon = get_polygon(trash_coords);
+        new_polygon.groupIndex = parseInt(groups_index);
+        new_polygon.trashIndex = i;
+        GROUPS[groups_index].layer.addRenderable(new_polygon);
       }
     });
   };
@@ -306,33 +324,84 @@ const test1 = () => {
     //set_layer_display(polygonLayer, false);
 }
 
+const show_trash_details = (polygon) => {
+    let trash_raw_info = GROUPS[polygon.groupIndex].trash[polygon.trashIndex];
+    let coords = get_coords(trash_raw_info.line1,trash_raw_info.line2, new Date());
+
+    let layer = GROUPS[polygon.groupIndex].layer;
+    if (LAST_TEXT.object != null) {
+        LAST_TEXT.layer.removeRenderable(LAST_TEXT.object);
+    }
+
+    LAST_TEXT.layer = layer;
+    LAST_TEXT.object = get_text(trash_raw_info.name, coords);
+    layer.addRenderable(LAST_TEXT.object);
+    
+    document.querySelector("#longitude").textContent = coords.longitude;
+    document.querySelector("#latitude").textContent = coords.latitude;
+    document.querySelector("#altitude").textContent = coords.height;
+
+    let line1_arr = trash_raw_info.line1.split(" ");
+    let line2_arr = trash_raw_info.line2.split(" ");
+    document.querySelector("#info0").textContent = line2_arr[1];
+    document.querySelector("#info1").textContent = line1_arr[10];
+    document.querySelector("#info2").textContent = trash_raw_info.name;
+}
 
 
+const predict_form = () => {
+    let input = document.querySelector("#date-input");
+    let button = document.querySelector("#do-predict");
 
+    //creamos una capa para los objetos de prediccion
+
+    PREDICT_LAYER = new WorldWind.RenderableLayer();
+    wwd.addLayer(PREDICT_LAYER);
+
+    button.addEventListener("click", () => {
+        if (input.value == "") {
+            alert("Define una fecha");
+        } else if (lastSelected == null) {
+            alert("Seleccion primero algun objeto");
+        } else {
+            let trash_row = GROUPS[lastSelected.groupIndex].trash[lastSelected.trashIndex];
+            let coords = get_coords(trash_row.line1, trash_row.line2, new Date(input.value));
+
+            PREDICT_LAYER.removeAllRenderables();
+
+            PREDICT_LAYER.addRenderable(get_polygon(coords));
+            PREDICT_LAYER.addRenderable(get_text(trash_row.name, coords));
+            set_layer_display(PREDICT_LAYER, true);
+            set_layer_display(GROUPS[0].layer, false);
+            set_layer_display(GROUPS[1].layer, false);
+        }
+    });
+}
+predict_form();
 
 
 
 
 
 //lo sigueinte es para reconocer los objetos que reciben un click, estos se iran agregando al array de highlightedItems
-var highlightedItems = [];
+var lastSelected = null;
 var handlePick = function (o) {
     // The input argument is either an Event or a TapRecognizer. Both have the same properties for determining
     // the mouse or tap location.
     var x = o.clientX,
         y = o.clientY;
 
-    var redrawRequired = highlightedItems.length > 0;
+    var redrawRequired = lastSelected != null;
 
     // De-highlight any highlighted placemarks.
-    for (var h = 0; h < highlightedItems.length; h++) {
-        highlightedItems[h].highlighted = false;
+    if (lastSelected != null) {
+        lastSelected.highlighted = false;
     }
-    highlightedItems = [];
+    lastSelected = null;
 
     // Perform the pick. Must first convert from window coordinates to canvas coordinates, which are
     // relative to the upper left corner of the canvas rather than the upper left corner of the page.
-    var rectRadius = 50,
+    var rectRadius = 1,
         pickPoint = wwd.canvasCoordinates(x, y),
         pickRectangle = new WorldWind.Rectangle(pickPoint[0] - rectRadius, pickPoint[1] + rectRadius,
             2 * rectRadius, 2 * rectRadius);
@@ -349,10 +418,11 @@ var handlePick = function (o) {
     if (pickList.objects.length > 0) {
         for (var p = 0; p < pickList.objects.length; p++) {
             if (pickList.objects[p].isOnTop) {
-                pickList.objects[p].userObject.highlighted = true;
                 //se imprime el objeto que recibe un click
-                console.log(pickList.objects[p].userObject);
-                highlightedItems.push(pickList.objects[p].userObject);
+                lastSelected = pickList.objects[p].userObject;
+                lastSelected.highlighted = true;
+                //lastSelected.attributes.interiorColor = {red:0, green:0, blue:0, alpha:1};
+                show_trash_details(lastSelected);
             }
         }
     }
@@ -364,7 +434,7 @@ var handlePick = function (o) {
 };
 
 // Listen for mouse moves and highlight the placemarks that the cursor rolls over.
-wwd.addEventListener("mousemove", handlePick);
+wwd.addEventListener("click", handlePick);
 
 // Listen for taps on mobile devices and highlight the placemarks that the user taps.
 var tapRecognizer = new WorldWind.TapRecognizer(wwd, handlePick);

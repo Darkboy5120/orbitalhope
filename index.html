@@ -8,11 +8,21 @@
     <link rel="stylesheet" href="style.css">
     <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/0d40d8f017.js" crossorigin="anonymous"></script>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <!-- Manifiesto -->
+    <link rel="manifest" href="manifest.json" />
+    <!-- Service worker -->
+    <script type="module" src="./pwabuilder-sw-register.js"></script>
 
     <body>
         <canvas id="canvasOne" width="1024" height="768">
             Your browser does not support HTML5 Canvas.
         </canvas>
+
+        <div>
+          <h1>OrbitalHope</h1>
+        </div>
 
         <div class="ui">
 
@@ -36,21 +46,21 @@
                     <p>Orbital Parameters</p>
                     <div class="nt-container">
                         <span>NORAD Catalog Number</span>
-                        <span>33757</span>
+                        <span id="info0">N/a</span>
                         <span>International designator</span>
-                        <span>1993-33757</span>
+                        <span id="info1">N/a</span>
                         <span>Name</span>
-                        <span>COSMOS 2251 DEB</span>
+                        <span id="info2">N/a</span>
                         <span>Period(minutes)</span>
-                        <span>100.55</span>
+                        <span id="info3">N/a</span>
                         <span>Inclination(degrees)</span>
-                        <span>74.04</span>
+                        <span id="info4">N/a</span>
                         <span>Apogee Height(km)</span>
-                        <span>796</span>
+                        <span id="info5">N/a</span>
                         <span>Perigee Height(km)</span>
-                        <span>773</span>
+                        <span id="info6">N/a</span>
                         <span>Eccentricity</span>
-                        <span>0.0016155</span>
+                        <span id="info7">N/a</span>
                     </div>
                 </div>
 
@@ -58,11 +68,11 @@
                     <p>Geographic location</p>
                     <div class="nt-container">
                         <span>Longitude</span>
-                        <span>233</span>
+                        <span id="longitude">N/a</span>
                         <span>Latitude</span>
-                        <span>12</span>
+                        <span id="latitude">N/a</span>
                         <span>Altitude</span>
-                        <span>213</span>
+                        <span id="altitude">N/a</span>
                     </div>
                 </div>
             </div>
@@ -75,6 +85,7 @@
         <!-- Worldwind 0.9.0 -->
         <script  src="worldwind.min.js" type="text/javascript"></script>
         <script src="script.js" type="text/javascript">
+        <script type="module" src="./pwabuilder-sw.js"></script>
         </script>
     </body>
 </html>
