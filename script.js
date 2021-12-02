@@ -83,6 +83,10 @@ const set_layer_display = (layer, is_visible) => {
     layer.enabled = (is_visible) ? true : false;
     wwd.redraw();
 
+    if (is_visible) {
+        CURRENT_LAYER = layer;
+    }
+
     //es esta, solo modifica si te fijas, en el documento de docs, todos tienen su id
     //el m6 lo esta haciendo Omar, aun no termina
 
@@ -113,6 +117,7 @@ const ONE_DAY = 1000 * 60 * 60 * 24;
 
 
 let GROUPS = [];
+let CURRENT_LAYER = null;
 
 //para guardar el ultimo texto y eliminarlo correctamente
 LAST_TEXT = {
@@ -206,8 +211,6 @@ const load_data = () => {
     }
   
     Promise.all(load_tasks).then((r) => {
-      console.log(GROUPS);
-      //console.log(r);
     });
   };
 
@@ -271,12 +274,53 @@ const fill_layer_from_data = (groups_index) => {
       }
     });
   };
-  
+
+  const real_time_update = () => {
+    const do_update = () => {
+        if (CURRENT_LAYER != null && CURRENT_LAYER != PREDICT_LAYER) {
+            for (let renderable of CURRENT_LAYER.renderables) {
+
+                let trash_raw_info = GROUPS[renderable.groupIndex].trash[renderable.trashIndex];
+                let coords = get_coords(
+                    trash_raw_info.line1,
+                    trash_raw_info.line2,
+                    new Date()
+                );
+
+                new_renderable = get_polygon(coords);
+                new_renderable.groupIndex = renderable.groupIndex;
+                new_renderable.trashIndex = renderable.trashIndex;
+
+                CURRENT_LAYER.addRenderable(new_renderable);
+                CURRENT_LAYER.removeRenderable(renderable);
+
+                /*renderable.referencePosition.altitude = 532212.4495436838;
+                renderable.referencePosition.latitude = -35.3464940438274;
+                renderable.referencePosition.longitude = 50.809083541031775;
+
+
+                */
+                /*let position = new WorldWind.Position(
+                    -35.3464940438274,
+                    50.809083541031775,
+                    532212.4495436838
+                );*/
+                //renderable.determineReferencePosition(position);
+                //renderable.render();
+            }
+            wwd.redraw();
+        }
+    }
+
+    do_update();
+    window.setInterval(do_update, 30000);
+}
 
 
 load_hour_display();
 load_data();
 input_search_behaviur();
+real_time_update();
 
 
 const get_text = (content, coords) => {
@@ -347,7 +391,6 @@ const show_trash_details = (polygon) => {
     document.querySelector("#info1").textContent = line1_arr[10];
     document.querySelector("#info2").textContent = trash_raw_info.name;
 }
-
 
 const predict_form = () => {
     let input = document.querySelector("#date-input");
